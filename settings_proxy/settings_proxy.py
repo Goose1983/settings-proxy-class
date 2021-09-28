@@ -6,19 +6,19 @@ from typing import Set, Any, Dict
 import requests
 
 
-class SettingsProxy:
+class SettingsProxy(object):
     _settings_keys: Set[str]
     _settings: Dict[Any, Any]
     _seconds_until_renew_settings: int
     _settings_service_endpoint: str
     _settings_json: str
 
-    # TODO
-    # def __new__(cls, *args):
-    #     # pattern singleton realisation
-    #     if not hasattr(cls, 'instance'):
-    #         cls.instance = super(SettingsProxy, cls).__new__(cls, *args)
-    #     return cls.instance
+    _instance = None
+
+    def __new__(cls, *args, **kwargs):
+        if not isinstance(cls._instance, cls):
+            cls._instance = object.__new__(cls)
+        return cls._instance
 
     def __init__(self, settings_service_endpoint, settings_keys, seconds_until_renew_settings=600):
         self._settings_keys = settings_keys
@@ -45,6 +45,7 @@ class SettingsProxy:
     def _start_regular_renew(self):
         while True:
             time.sleep(self._seconds_until_renew_settings)
+            print(self._seconds_until_renew_settings)
             self._renew_settings()
 
     def get(self, setting_key):
