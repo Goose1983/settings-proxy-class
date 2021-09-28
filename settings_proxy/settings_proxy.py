@@ -14,6 +14,7 @@ class SettingsProxy(object):
     _settings_json: str
 
     _instance = None
+    _renew_started = False
 
     def __new__(cls, *args, **kwargs):
         if not isinstance(cls._instance, cls):
@@ -25,8 +26,9 @@ class SettingsProxy(object):
         self._seconds_until_renew_settings = seconds_until_renew_settings
         self._settings_service_endpoint = settings_service_endpoint
         self._renew_settings()
-        x = threading.Thread(target=self._start_regular_renew)
-        x.start()
+        if not self._renew_started:
+            x = threading.Thread(target=self._start_regular_renew)
+            x.start()
 
     def _renew_settings(self):
         try:
@@ -43,9 +45,9 @@ class SettingsProxy(object):
         self._settings_json = json.dumps(self._settings)
 
     def _start_regular_renew(self):
+        self._renew_started = True
         while True:
             time.sleep(self._seconds_until_renew_settings)
-            print(self._seconds_until_renew_settings)
             self._renew_settings()
 
     def get(self, setting_key):
