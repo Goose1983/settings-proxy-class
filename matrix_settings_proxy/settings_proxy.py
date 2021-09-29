@@ -37,11 +37,16 @@ class SettingsProxy(object):
             })
         except Exception as e:
             logging.error("Ошибка получения настроек из сервиса настроек %s", str(e))
+            raise
         if response.status_code != 200:
             logging.error("Ошибка получения настроек из сервиса настроек. Статус %s %s", response.status_code,
                           response.reason)
-            return
-        self._settings = response.json()["settings"]
+            raise Exception("Ошибка получения настроек из сервиса настроек.")
+        body = response.json()
+        if body["error_message"] is not None:
+            logging.error(body["error_message"])
+            raise Exception(body["error_message"])
+        self._settings = body["settings"]
         self._settings_json = json.dumps(self._settings)
 
     def _start_regular_renew(self):
